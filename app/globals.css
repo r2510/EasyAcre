@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* Hide scrollbar but keep scroll behavior */
+  .scrollbar-hide {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 92%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 96%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 96%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 0 0% 20%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 85%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 88%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 30%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 82%;
+    --input: 0 0% 94%;
+    --ring: 0 0% 30%;
+    --chart-1: 0 0% 35%;
+    --chart-2: 0 0% 50%;
+    --chart-3: 0 0% 65%;
+    --chart-4: 0 0% 45%;
+    --chart-5: 0 0% 55%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 94%;
+    --sidebar-foreground: 0 0% 15%;
+    --sidebar-primary: 0 0% 20%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 30%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 82%;
+    --sidebar-ring: 0 0% 30%;
+  }
+  .dark {
+    --background: 0 0% 12%;
+    --foreground: 0 0% 92%;
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 92%;
+    --popover: 0 0% 16%;
+    --popover-foreground: 0 0% 92%;
+    --primary: 0 0% 80%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 22%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 0 0% 28%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 70%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 24%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 70%;
+    --chart-1: 0 0% 65%;
+    --chart-2: 0 0% 50%;
+    --chart-3: 0 0% 75%;
+    --chart-4: 0 0% 55%;
+    --chart-5: 0 0% 45%;
+    --sidebar-background: 0 0% 14%;
+    --sidebar-foreground: 0 0% 88%;
+    --sidebar-primary: 0 0% 80%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 70%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 24%;
+    --sidebar-ring: 0 0% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Leaflet: hide default marker image for custom divIcon markers */
+.leaflet-div-icon.leaflet-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-from-bottom-3 {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-in {
+  animation-duration: 0.4s;
+  animation-timing-function: ease-out;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+.slide-in-from-bottom-3 {
+  animation-name: fade-in, slide-in-from-bottom-3;
+}
