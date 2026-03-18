@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useCityContext } from '@/lib/city-context';
-import { getCityById } from '@/lib/cities-data';
-import { Send, X, Loader2, MessageCircle } from 'lucide-react';
+import { useCitiesData } from '@/lib/cities-data-provider';
+import { Send, X, Loader2, MessageCircle, ChevronDown } from 'lucide-react';
 
 function generateSessionId(): string {
   return crypto.randomUUID();
@@ -15,19 +15,31 @@ interface ChatMessage {
   text: string;
 }
 
+const CHAT_CONTEXT_GENERAL = '';
+
 export function WolfreChat() {
   const { selectedCityId, chatOpen, setChatOpen, chatNewsContext, clearChatNewsContext } = useCityContext();
+  const { getCityById } = useCitiesData();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [chatContext, setChatContext] = useState<string>(CHAT_CONTEXT_GENERAL);
+  const [showScrollbar, setShowScrollbar] = useState(false);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string>(generateSessionId());
   const processedNewsRef = useRef<string | null>(null);
   const prevCityIdRef = useRef<string | undefined>(selectedCityId);
 
   const city = selectedCityId ? getCityById(selectedCityId) : null;
+  const effectiveCity = chatContext ? getCityById(chatContext) : null;
 
-  // Reset conversation only when user selects a different city
+  // Sync dropdown with map selection: when map city changes, set chat context to it or General
+  useEffect(() => {
+    setChatContext(selectedCityId ?? CHAT_CONTEXT_GENERAL);
+  }, [selectedCityId]);
+
+  // Reset conversation only when user selects a different city on the map
   useEffect(() => {
     if (prevCityIdRef.current !== selectedCityId) {
       prevCityIdRef.current = selectedCityId;
@@ -37,13 +49,19 @@ export function WolfreChat() {
     }
   }, [selectedCityId]);
 
-  const predefinedQuestions = city
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, []);
+
+  const predefinedQuestions = effectiveCity
     ? [
-        `How to start investing in ${city.name}?`,
+        `How to start investing in ${effectiveCity.name}?`,
         'How much min capital required to start investing?',
-        `Recently started project in ${city.name}?`,
-        `What are the best neighborhoods in ${city.name}?`,
-        `What's the rental yield in ${city.name}?`,
+        `Recently started project in ${effectiveCity.name}?`,
+        `What are the best neighborhoods in ${effectiveCity.name}?`,
+        `What's the rental yield in ${effectiveCity.name}?`,
       ]
     : [
         'How to start real estate investing?',
@@ -82,7 +100,7 @@ export function WolfreChat() {
         body: JSON.stringify({
           message: messageText,
           userName: 'Investor',
-          cityName: city?.name,
+          cityName: effectiveCity?.name,
           sessionId: sessionIdRef.current,
           history,
         }),
@@ -110,7 +128,7 @@ export function WolfreChat() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, city?.name]);
+  }, [input, isLoading, messages, effectiveCity?.name]);
 
   useEffect(() => {
     if (chatNewsContext && chatOpen && chatNewsContext !== processedNewsRef.current) {
@@ -149,7 +167,7 @@ export function WolfreChat() {
             <div>
               <h3 className="font-bold text-sm text-white">Wolfre AI</h3>
               <p className="text-xs text-white/60">
-                {isLoading ? 'Thinking...' : city ? `${city.name} · Real Estate` : 'Real Estate Assistant'}
+                {isLoading ? 'Thinking...' : effectiveCity ? `${effectiveCity.name} · Real Estate` : 'General · Real Estate'}
               </p>
             </div>
           </div>
@@ -172,7 +190,7 @@ export function WolfreChat() {
                 <p className="font-semibold text-white mb-1">Hi! I&apos;m Wolfre</p>
                 <p className="text-xs text-white/50 max-w-xs">
                   Your AI-powered real estate assistant.
-                  {city ? ` Ask me anything about ${city.name}!` : ' Ask me anything about real estate!'}
+                  {effectiveCity ? ` Ask me anything about ${effectiveCity.name}!` : ' Ask me anything about real estate!'}
                 </p>
               </div>
             </div>
@@ -223,29 +241,59 @@ export function WolfreChat() {
           </div>
         )}
 
-        {/* Input */}
-        <div className="px-4 py-3 border-t border-white/10 bg-black/40 shrink-0">
-          <div className="flex gap-2">
-            <input
-              type="text"
+        {/* Input — Cursor-style: one clean box, textarea + bottom row (dropdown + send) */}
+        <div className="px-4 py-3 border-t border-white/10 shrink-0">
+          <div className="flex flex-col rounded-lg border border-white/10 bg-white/[0.04] overflow-hidden">
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              onScroll={() => {
+                setShowScrollbar(true);
+                if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+                scrollTimeoutRef.current = setTimeout(() => {
+                  setShowScrollbar(false);
+                  scrollTimeoutRef.current = null;
+                }, 1200);
+              }}
+              data-scrolling={showScrollbar ? 'true' : undefined}
               placeholder={isLoading ? 'Wolfre is thinking...' : 'Ask Wolfre...'}
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-white/20 placeholder-white/30 disabled:opacity-50"
+              rows={3}
+              className="w-full min-h-[72px] max-h-[180px] resize-none overflow-y-auto scrollbar-overlay px-4 pt-3 pb-1 bg-transparent text-white text-sm focus:outline-none placeholder-white/40 disabled:opacity-50 whitespace-pre-wrap break-words border-0 focus:ring-0"
             />
-            <button
-              onClick={() => handleSendMessage()}
-              disabled={isLoading || !input.trim()}
-              className="p-2.5 bg-white/20 text-white rounded-xl border border-white/10 hover:bg-white/30 transition disabled:opacity-50"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </button>
+            <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-t border-white/5">
+              {/* Context dropdown – styled similar to Ask Wolfre button, with Cursor-like mode switch feel */}
+              <div className="relative inline-flex items-center max-w-[60%] px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 hover:bg-white/20 transition-colors">
+                <select
+                  value={chatContext}
+                  onChange={(e) => setChatContext(e.target.value)}
+                  className="chat-context-select max-w-[140px] pr-6 text-[11px] font-medium text-white/85 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer appearance-none truncate"
+                  style={{ colorScheme: 'dark' }}
+                  aria-label="Chat context"
+                >
+                  <option value={CHAT_CONTEXT_GENERAL}>General</option>
+                  {city && <option value={city.id}>{city.name}</option>}
+                </select>
+                <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none text-white/60" aria-hidden />
+              </div>
+              <button
+                onClick={() => handleSendMessage()}
+                disabled={isLoading || !input.trim()}
+                className="p-1.5 rounded text-white/70 hover:text-white hover:bg-white/10 transition disabled:opacity-40 shrink-0"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

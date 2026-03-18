@@ -2,20 +2,29 @@
 
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { CITIES, City } from '@/lib/cities-data';
+import type { CityWithSnapshot } from '@/lib/db/types';
 import { useCityContext } from '@/lib/city-context';
-import { useEffect, useState, useRef } from 'react';
+import { useCitiesData } from '@/lib/cities-data-provider';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
 
 import 'leaflet/dist/leaflet.css';
 
 const PADDING = 25;
-const cityLats = CITIES.map((c) => c.lat);
-const cityLngs = CITIES.map((c) => c.lng);
-const MAP_BOUNDS: [[number, number], [number, number]] = [
-  [Math.min(...cityLats) - PADDING, Math.min(...cityLngs) - PADDING],
-  [Math.max(...cityLats) + PADDING, Math.max(...cityLngs) + PADDING],
+const DEFAULT_BOUNDS: [[number, number], [number, number]] = [
+  [-60, -180],
+  [75, 180],
 ];
+
+function getMapBounds(cities: CityWithSnapshot[]): [[number, number], [number, number]] {
+  if (!cities.length) return DEFAULT_BOUNDS;
+  const lats = cities.map((c) => c.lat);
+  const lngs = cities.map((c) => c.lng);
+  return [
+    [Math.min(...lats) - PADDING, Math.min(...lngs) - PADDING],
+    [Math.max(...lats) + PADDING, Math.max(...lngs) + PADDING],
+  ];
+}
 
 const MARKER_SIZE = 20;
 const ICON_COLOR = { default: '#475569', selected: '#0f766e' };
@@ -35,31 +44,31 @@ const createHomeLocationIcon = (selected: boolean) => {
   });
 };
 
-function MapController({ selectedId }: { selectedId: string | null }) {
+function MapController({ selectedId, cities }: { selectedId: string | null; cities: CityWithSnapshot[] }) {
   const map = useMap();
   useEffect(() => {
-    if (!selectedId) return;
-    const city = CITIES.find((c) => c.id === selectedId);
+    if (!selectedId || !cities.length) return;
+    const city = cities.find((c) => c.id === selectedId);
     if (city) map.flyTo([city.lat, city.lng], 5, { duration: 0.5 });
-  }, [selectedId, map]);
+  }, [selectedId, map, cities]);
   return null;
 }
 
-function CitySearch() {
+function CitySearch({ cities }: { cities: CityWithSnapshot[] }) {
   const [query, setQuery] = useState('');
   const { setSelectedCityId } = useCityContext();
   const map = useMap();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const filtered = query.trim()
-    ? CITIES.filter(
+    ? cities.filter(
         (c) =>
           c.name.toLowerCase().includes(query.toLowerCase()) ||
           c.country.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 8)
     : [];
 
-  const handleSelect = (city: City) => {
+  const handleSelect = (city: CityWithSnapshot) => {
     setSelectedCityId(city.id);
     map.flyTo([city.lat, city.lng], 5, { duration: 0.5 });
     setQuery('');
@@ -125,6 +134,8 @@ interface MapViewProps {
 
 export function MapView({ onCitySelect }: MapViewProps) {
   const { selectedCityId, setSelectedCityId } = useCityContext();
+  const { cities } = useCitiesData();
+  const mapBounds = useMemo(() => getMapBounds(cities), [cities]);
 
   const handleCitySelect = (cityId: string) => {
     setSelectedCityId(cityId);
@@ -138,7 +149,7 @@ export function MapView({ onCitySelect }: MapViewProps) {
         zoom={4}
         minZoom={2}
         maxZoom={14}
-        maxBounds={MAP_BOUNDS}
+        maxBounds={mapBounds}
         maxBoundsViscosity={1}
         style={{ height: '100%', width: '100%', borderRadius: '8px' }}
         scrollWheelZoom
@@ -149,9 +160,9 @@ export function MapView({ onCitySelect }: MapViewProps) {
           attribution="Leaflet · © OpenStreetMap · © CARTO"
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
-        <MapController selectedId={selectedCityId} />
-        <CitySearch />
-        {CITIES.map((city: City) => (
+        <MapController selectedId={selectedCityId} cities={cities} />
+        <CitySearch cities={cities} />
+        {cities.map((city) => (
           <Marker
             key={city.id}
             position={[city.lat, city.lng]}

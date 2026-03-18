@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase';
+import { buildSystemPrompt } from '@/lib/prompts';
+import { getClientIdentifier, checkRateLimit, CHAT_RATE_LIMIT } from '@/lib/rate-limit';
+import { searchTavilyForChat } from '@/lib/tavily-chat-search';
 
 // --- Provider configs ---
 
@@ -47,37 +50,43 @@ function buildProviders(): ProviderConfig[] {
   return providers;
 }
 
-// --- System prompt ---
+// --- Latest-info detection (Option A: keyword-based) ---
 
-const SYSTEM_PROMPT = `You are Wolfre, a professional real estate agent and investment advisor. You ONLY discuss topics related to real estate. Your areas of expertise are:
-- Property buying, selling, and investment strategies
-- Mortgage, financing, and loan guidance
-- Zoning laws, permits, and regulations
-- Rental yield and ROI calculations
-- Neighborhood analysis and city comparisons
-- Real estate market trends and forecasts
-- Property valuation and pricing
-- Tax implications of real estate transactions
-- Legal aspects of property ownership
-- Construction, renovation, and development
+/** Message from "Ask Wolfre" on a news item — we already have article context, skip Tavily. */
+const ASK_WOLFRE_NEWS_PREFIX = 'Regarding this news:';
 
-STRICT BOUNDARY: You must NEVER answer questions unrelated to real estate, property, or housing. If a user asks about cooking, sports, programming, entertainment, health, or ANY non-real-estate topic, politely decline and redirect them back to real estate. Example: "I appreciate the question, but I'm Wolfre — your dedicated real estate assistant! I can help with property investment, mortgages, market trends, and more. What would you like to know about real estate?"
+const LATEST_INFO_KEYWORDS = [
+  'today',
+  'latest',
+  'current',
+  'recent',
+  'this week',
+  'this month',
+  'right now',
+  'breaking',
+  'just happened',
+  'new developments',
+  "what's happening",
+  'what is happening',
+  'market drop',
+  'market crash',
+  'market news',
+  'recent news',
+  'current news',
+  'latest news',
+  'any updates',
+  'any recent',
+];
 
-Rules:
-- Keep responses concise (3-5 sentences) unless the user asks for detail.
-- Use real estate terminology but explain it simply.
-- When discussing specific cities, reference local market dynamics.
-- If you don't know current data, say so and suggest where to find it.
-- Be friendly, professional, and confident like a seasoned real estate agent.
-- When relevant, proactively suggest related real estate topics the user might find useful.
+function isAskWolfreNewsMessage(message: string): boolean {
+  return message.trim().startsWith(ASK_WOLFRE_NEWS_PREFIX);
+}
 
-IMPORTANT: At the very end of every response, on a new line, append a JSON classification block in exactly this format:
-|||{"topic":"<ONE_WORD>","sentiment":"<WORD>"}|||
-
-- "topic" must be exactly one word from: Mortgage, Zoning, Investment, Rental, Pricing, Tax, Legal, Insurance, Market, Neighborhood, Construction, General
-- "sentiment" must be one of: positive, negative, neutral, frustrated, curious
-
-This classification block describes the USER's question, not your answer. Always include it. Never omit it.`;
+function needsLatestInfo(message: string): boolean {
+  if (isAskWolfreNewsMessage(message)) return false;
+  const lower = message.toLowerCase().trim();
+  return LATEST_INFO_KEYWORDS.some((kw) => lower.includes(kw));
+}
 
 // --- Types ---
 
@@ -182,11 +191,10 @@ async function tryModel(
 async function getAIResponse(
   message: string,
   cityName: string | undefined,
-  history: { role: string; content: string }[]
+  history: { role: string; content: string }[],
+  latestContext: string | null = null
 ): Promise<ChatResult> {
-  const systemContent = cityName
-    ? `${SYSTEM_PROMPT}\n\nThe user is currently exploring ${cityName}. Tailor your answers to this city's real estate market when relevant.`
-    : SYSTEM_PROMPT;
+  const systemContent = buildSystemPrompt(cityName, latestContext);
 
   const cleanHistory = history.slice(-8).map((h) => ({
     role: h.role,
@@ -232,6 +240,13 @@ async function getAIResponse(
 
 // --- Supabase logging ---
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function ensureValidSessionId(sessionId: string | undefined): string {
+  if (sessionId && UUID_REGEX.test(sessionId)) return sessionId;
+  return crypto.randomUUID();
+}
+
 interface LogPayload {
   session_id: string;
   name: string;
@@ -243,18 +258,44 @@ interface LogPayload {
   response_time_ms: number;
 }
 
-async function logToSupabase(payload: LogPayload) {
+async function logToSupabase(payload: LogPayload): Promise<{ ok: boolean; error?: string }> {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('[chat] SUPABASE_SERVICE_ROLE_KEY not set — chat will not be stored in DB');
+    return { ok: false, error: 'Service role key not configured' };
+  }
   try {
     const supabase = getServiceClient();
-    await supabase.from('chat_queries').insert(payload);
+    const { error } = await supabase.from('chat_queries').insert(payload);
+    if (error) {
+      console.error('[chat] Supabase insert failed:', error.message, error.details);
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
   } catch (err) {
-    console.error('Supabase logging failed:', err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[chat] Supabase logging failed:', msg);
+    return { ok: false, error: msg };
   }
 }
 
 // --- API handler ---
 
 export async function POST(request: NextRequest) {
+  const clientId = getClientIdentifier(request);
+  const limitKey = `chat:${clientId}`;
+  const limit = checkRateLimit(limitKey, CHAT_RATE_LIMIT);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)),
+        },
+      }
+    );
+  }
+
   try {
     const body: ChatRequest = await request.json();
     const { message, userName, cityName, sessionId, history = [] } = body;
@@ -263,20 +304,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
+    let latestContext: string | null = null;
+    if (needsLatestInfo(message)) {
+      const tavilyKey = process.env.TAVILY_API_KEY;
+      if (tavilyKey) {
+        latestContext = await searchTavilyForChat(message, tavilyKey, {
+          cityName: cityName || undefined,
+        });
+      }
+    }
+
     const startTime = Date.now();
-    const { response, topic, sentiment, model } = await getAIResponse(message, cityName, history);
+    const { response, topic, sentiment, model } = await getAIResponse(
+      message,
+      cityName,
+      history,
+      latestContext
+    );
     const responseTimeMs = Date.now() - startTime;
 
-    logToSupabase({
-      session_id: sessionId,
+    const logResult = await logToSupabase({
+      session_id: ensureValidSessionId(sessionId),
       name: userName || 'Anonymous',
-      city: cityName || null,
+      city: cityName ?? 'General',
       topic,
       user_query: message,
       ai_response: response,
       sentiment,
       response_time_ms: responseTimeMs,
     });
+    if (!logResult.ok) {
+      console.warn('[chat] Chat not persisted to DB:', logResult.error);
+    }
 
     return NextResponse.json({ response, topic, sentiment, model, responseTimeMs });
   } catch (error) {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getCityById } from '@/lib/cities-data';
 import { useCityContext } from '@/lib/city-context';
+import { useCitiesData } from '@/lib/cities-data-provider';
 import { ExternalLink, Loader2, Newspaper, RefreshCw, AlertCircle, MessageCircle } from 'lucide-react';
 
 interface DynamicNewsItem {
@@ -17,6 +17,7 @@ interface DynamicNewsItem {
 
 export function NewsFeed() {
   const { selectedCityId, openChatWithNews } = useCityContext();
+  const { getCityById } = useCitiesData();
   const [news, setNews] = useState<DynamicNewsItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

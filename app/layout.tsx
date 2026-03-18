@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 
 import './globals.css'
 
-const _geist = Geist({ subsets: ['latin'] })
-const _geistMono = Geist_Mono({ subsets: ['latin'] })
+const geist = Geist({ subsets: ['latin'], display: 'swap' })
+const geistMono = Geist_Mono({ subsets: ['latin'], display: 'swap' })
 
 export const metadata: Metadata = {
   title: 'Wolfre - Global Real Estate Intelligence',
@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">{children}</body>
+    <html lang="en" dir="ltr">
+      <body className={`${geist.className} antialiased`}>{children}</body>
     </html>
   )
 }

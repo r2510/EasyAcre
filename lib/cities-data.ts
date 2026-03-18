@@ -156,3 +156,50 @@ export const PREMIER_CITY_IDS = [
 ];
 
 export const PREMIER_CITIES = CITIES.filter((c) => PREMIER_CITY_IDS.includes(c.id));
+
+/** Country name -> ISO 4217 currency code for static fallback (matches DB countries.currency_code) */
+const COUNTRY_CURRENCY: Record<string, string> = {
+  UK: 'GBP', USA: 'USD', Japan: 'JPY', Singapore: 'SGD', UAE: 'AED', France: 'EUR', China: 'CNY',
+  India: 'INR', Australia: 'AUD', Canada: 'CAD', Germany: 'EUR', Spain: 'EUR', Italy: 'EUR',
+  Netherlands: 'EUR', Switzerland: 'CHF', Austria: 'EUR', Sweden: 'SEK', Denmark: 'DKK', Norway: 'NOK',
+  Finland: 'EUR', Ireland: 'EUR', Portugal: 'EUR', 'Czech Republic': 'CZK', Poland: 'PLN', Belgium: 'EUR',
+  Turkey: 'TRY', Russia: 'RUB', Greece: 'EUR', Hungary: 'HUF', 'South Korea': 'KRW', Taiwan: 'TWD',
+  Indonesia: 'IDR', Philippines: 'PHP', Vietnam: 'VND', 'Saudi Arabia': 'SAR', Qatar: 'QAR', Israel: 'ILS',
+  Mexico: 'MXN', Brazil: 'BRL', Argentina: 'ARS', Colombia: 'COP', Peru: 'PEN', Chile: 'CLP',
+  'South Africa': 'ZAR', Nigeria: 'NGN', Kenya: 'KES', Egypt: 'EGP', Morocco: 'MAD', Ethiopia: 'ETB',
+  'New Zealand': 'NZD', Thailand: 'THB', Malaysia: 'MYR',
+};
+
+/** Fallback market snapshot when Supabase is unavailable. Values in local currency (same as DB script). */
+const FALLBACK_SNAPSHOTS: Record<string, { rentalYield: string; pricePerSqft: string; avgPrice: string; yoyGrowth: string }> = {
+  'dubai': { rentalYield: '6.2%', pricePerSqft: 'AED 1,285', avgPrice: 'AED 1.65M', yoyGrowth: '+12.4%' },
+  'london': { rentalYield: '3.8%', pricePerSqft: '£948', avgPrice: '£648K', yoyGrowth: '+4.1%' },
+  'new-york': { rentalYield: '4.2%', pricePerSqft: '$1,100', avgPrice: '$950K', yoyGrowth: '+5.3%' },
+  'singapore': { rentalYield: '3.5%', pricePerSqft: 'S$1,876', avgPrice: 'S$1.47M', yoyGrowth: '+3.8%' },
+  'tokyo': { rentalYield: '3.9%', pricePerSqft: '¥120,000', avgPrice: '¥78M', yoyGrowth: '+6.2%' },
+  'hong-kong': { rentalYield: '2.8%', pricePerSqft: '¥15,225', avgPrice: '¥10.15M', yoyGrowth: '-1.2%' },
+  'paris': { rentalYield: '3.2%', pricePerSqft: '€874', avgPrice: '€626K', yoyGrowth: '+2.9%' },
+  'mumbai': { rentalYield: '3.1%', pricePerSqft: '₹23,800', avgPrice: '₹27.2L', yoyGrowth: '+8.5%' },
+  'delhi': { rentalYield: '2.8%', pricePerSqft: '₹18,700', avgPrice: '₹21.25L', yoyGrowth: '+7.2%' },
+  'bengaluru': { rentalYield: '3.6%', pricePerSqft: '₹10,200', avgPrice: '₹15.3L', yoyGrowth: '+9.1%' },
+  'sydney': { rentalYield: '3.4%', pricePerSqft: 'A$1,148', avgPrice: 'A$1.19M', yoyGrowth: '+5.6%' },
+  'toronto': { rentalYield: '3.9%', pricePerSqft: 'C$925', avgPrice: 'C$843K', yoyGrowth: '+3.2%' },
+  'abu-dhabi': { rentalYield: '5.8%', pricePerSqft: 'AED 1,101', avgPrice: 'AED 1.39M', yoyGrowth: '+10.1%' },
+  'riyadh': { rentalYield: '5.5%', pricePerSqft: 'SAR 675', avgPrice: 'SAR 1.05M', yoyGrowth: '+14.2%' },
+  'istanbul': { rentalYield: '5.2%', pricePerSqft: '₺4,800', avgPrice: '₺6.4M', yoyGrowth: '+18.5%' },
+  'shanghai': { rentalYield: '2.1%', pricePerSqft: '¥6,525', avgPrice: '¥4.71M', yoyGrowth: '-0.5%' },
+  'bangkok': { rentalYield: '4.8%', pricePerSqft: '฿6,300', avgPrice: '฿7.7M', yoyGrowth: '+6.8%' },
+  'kuala-lumpur': { rentalYield: '4.5%', pricePerSqft: 'RM752', avgPrice: 'RM893K', yoyGrowth: '+5.4%' },
+};
+
+const DEFAULT_SNAPSHOT = { rentalYield: '4.0%', pricePerSqft: '—', avgPrice: '—', yoyGrowth: '+5.0%' };
+
+/** Static cities with snapshot for fallback when API fails. Uses CityWithSnapshot shape from lib/db/types. */
+export function getStaticCitiesWithSnapshots(): Array<City & { is_premier?: boolean; snapshot: { rentalYield: string; pricePerSqft: string; avgPrice: string; yoyGrowth: string } | null }> {
+  return CITIES.map((c) => ({
+    ...c,
+    currency_code: COUNTRY_CURRENCY[c.country] ?? 'USD',
+    is_premier: PREMIER_CITY_IDS.includes(c.id),
+    snapshot: FALLBACK_SNAPSHOTS[c.id] ?? null,
+  }));
+}

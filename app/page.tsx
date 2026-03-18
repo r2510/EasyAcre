@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Landing } from './landing';
 import { Home } from './home';
 import { CityProvider } from '@/lib/city-context';
+import { CitiesDataProvider } from '@/lib/cities-data-provider';
 
 export default function Page() {
   const [showHome, setShowHome] = useState(false);
@@ -26,12 +27,14 @@ export default function Page() {
   }, []);
 
   return (
-    <CityProvider>
-      {!showHome ? (
-        <Landing onExplore={goHome} />
-      ) : (
-        <Home onLogout={goLanding} />
-      )}
-    </CityProvider>
+    <CitiesDataProvider>
+      <CityProvider>
+        {!showHome ? (
+          <Landing onExplore={goHome} />
+        ) : (
+          <Home onLogout={goLanding} />
+        )}
+      </CityProvider>
+    </CitiesDataProvider>
   );
 }

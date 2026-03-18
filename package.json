@@ -1,12 +1,14 @@
 {
-  "name": "my-project",
+  "name": "wolfre",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "npx next dev --turbo",
     "build": "npx next build",
     "start": "npx next start",
-    "lint": "npx next lint"
+    "lint": "npx next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -70,7 +72,8 @@
     "@types/react-dom": "19.2.3",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "vitest": "^2.1.8"
   },
   "pnpm": {
     "overrides": {

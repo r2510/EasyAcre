@@ -5,7 +5,7 @@ import { NewsFeed } from '@/components/news-feed';
 import { WolfreChat } from '@/components/wolfre-chat';
 import { CityInsights } from '@/components/city-insights';
 import { useCityContext } from '@/lib/city-context';
-import { getCityById } from '@/lib/cities-data';
+import { useCitiesData } from '@/lib/cities-data-provider';
 import { MessageCircle, MapPin, Newspaper, Bot } from 'lucide-react';
 
 interface HomeProps {
@@ -14,6 +14,7 @@ interface HomeProps {
 
 export function Home({ onLogout }: HomeProps) {
   const { setChatOpen, selectedCityId } = useCityContext();
+  const { getCityById } = useCitiesData();
   const city = selectedCityId ? getCityById(selectedCityId) : null;
 
   return (

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getClientIdentifier, checkRateLimit, NEWS_RATE_LIMIT } from '@/lib/rate-limit';
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -304,6 +305,21 @@ function formatDate(dateStr?: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const clientId = getClientIdentifier(request);
+  const limitKey = `news:${clientId}`;
+  const limit = checkRateLimit(limitKey, NEWS_RATE_LIMIT);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)),
+        },
+      }
+    );
+  }
+
   const city = request.nextUrl.searchParams.get('city');
   const country = request.nextUrl.searchParams.get('country') || '';
 
@@ -326,7 +342,9 @@ export async function GET(request: NextRequest) {
     const allResults = tavilyData.results || [];
 
     if (allResults.length === 0) {
-      return NextResponse.json({ news: [], debug: { raw_titles: [] } });
+      const payload: { news: unknown[]; debug?: { raw_titles: string[] } } = { news: [] };
+      if (process.env.NODE_ENV !== 'production') payload.debug = { raw_titles: [] };
+      return NextResponse.json(payload);
     }
 
     const scored = allResults
@@ -375,19 +393,17 @@ export async function GET(request: NextRequest) {
       newsItems.push(...batchResults);
     }
 
-    return NextResponse.json(
-      {
-        news: newsItems,
-        debug: {
-          raw_titles: allResults.map((r) => r.title),
-        },
+    const payload: { news: typeof newsItems; debug?: { raw_titles: string[] } } = {
+      news: newsItems,
+    };
+    if (process.env.NODE_ENV !== 'production') {
+      payload.debug = { raw_titles: allResults.map((r) => r.title) };
+    }
+    return NextResponse.json(payload, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300',
       },
-      {
-        headers: {
-          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300',
-        },
-      }
-    );
+    });
   } catch (error) {
     console.error('News API error:', error);
     return NextResponse.json(

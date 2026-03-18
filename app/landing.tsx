@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useCityContext } from '@/lib/city-context';
-import { PREMIER_CITIES } from '@/lib/cities-data';
+import { useCitiesData } from '@/lib/cities-data-provider';
 import { Globe2, TrendingUp, MessageSquare, Zap, ChevronDown } from 'lucide-react';
 
 interface LandingProps {
@@ -12,6 +12,7 @@ interface LandingProps {
 export function Landing({ onExplore }: LandingProps) {
   const [selectedCity, setSelectedCity] = useState('');
   const { setSelectedCityId } = useCityContext();
+  const { premierCities } = useCitiesData();
 
   const handleExplore = () => {
     if (selectedCity) {
@@ -122,7 +123,7 @@ export function Landing({ onExplore }: LandingProps) {
                       className="w-full px-5 py-4 bg-white/90 backdrop-blur-sm border border-white/10 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/40 text-base font-medium shadow-xl transition appearance-none cursor-pointer"
                     >
                       <option value="" disabled>Select a Premier Market</option>
-                      {PREMIER_CITIES.map((city) => (
+                      {premierCities.map((city) => (
                         <option key={city.id} value={city.id}>
                           {city.name}, {city.country}
                         </option>
@@ -138,21 +139,6 @@ export function Landing({ onExplore }: LandingProps) {
                   >
                     Explore Now
                   </button>
-                </div>
-
-                <div className="pt-2 space-y-3">
-                  <div className="flex items-center gap-3 text-white/50">
-                    <div className="w-1 h-1 rounded-full bg-white/40" />
-                    <span className="text-xs">Real-time market insights &amp; trends</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-white/50">
-                    <div className="w-1 h-1 rounded-full bg-white/40" />
-                    <span className="text-xs">AI-powered real estate assistant</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-white/50">
-                    <div className="w-1 h-1 rounded-full bg-white/40" />
-                    <span className="text-xs">Curated news from premier global markets</span>
-                  </div>
                 </div>
               </div>
             </div>
