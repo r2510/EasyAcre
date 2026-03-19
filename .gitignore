@@ -9,7 +9,8 @@ node_modules/
 .pnp.js
 
 # Next.js
-.next/
+/.next/
+/.next/**
 out/
 
 # Environment variables (never commit secrets)
