@@ -7,9 +7,12 @@ const geist = Geist({ subsets: ['latin'], display: 'swap' })
 const geistMono = Geist_Mono({ subsets: ['latin'], display: 'swap' })
 
 export const metadata: Metadata = {
-  title: 'Wolfre - Global Real Estate Intelligence',
+  title: 'EasyAcre - Global Real Estate Intelligence',
   description: 'Explore real estate markets across the world\'s most dynamic cities with comprehensive property news, investment insights, and AI-powered analysis.',
   generator: 'v0.app',
+  icons: {
+    icon: '/easyacre-logo.svg',
+  },
   viewport: {
     width: 'device-width',
     initialScale: 1,

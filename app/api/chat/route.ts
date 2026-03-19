@@ -41,7 +41,7 @@ function buildProviders(): ProviderConfig[] {
       apiKey: orKey,
       headers: {
         'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-        'X-Title': 'Wolfre',
+        'X-Title': 'EasyAcre',
       },
       models: [primary, ...fallbacks],
     });
@@ -52,8 +52,8 @@ function buildProviders(): ProviderConfig[] {
 
 // --- Latest-info detection (Option A: keyword-based) ---
 
-/** Message from "Ask Wolfre" on a news item — we already have article context, skip Tavily. */
-const ASK_WOLFRE_NEWS_PREFIX = 'Regarding this news:';
+/** Message from "Ask EasyAcre" on a news item — we already have article context, skip Tavily. */
+const ASK_EASYACRE_NEWS_PREFIX = 'Regarding this news:';
 
 const LATEST_INFO_KEYWORDS = [
   'today',
@@ -78,12 +78,12 @@ const LATEST_INFO_KEYWORDS = [
   'any recent',
 ];
 
-function isAskWolfreNewsMessage(message: string): boolean {
-  return message.trim().startsWith(ASK_WOLFRE_NEWS_PREFIX);
+function isAskEasyAcreNewsMessage(message: string): boolean {
+  return message.trim().startsWith(ASK_EASYACRE_NEWS_PREFIX);
 }
 
 function needsLatestInfo(message: string): boolean {
-  if (isAskWolfreNewsMessage(message)) return false;
+  if (isAskEasyAcreNewsMessage(message)) return false;
   const lower = message.toLowerCase().trim();
   return LATEST_INFO_KEYWORDS.some((kw) => lower.includes(kw));
 }

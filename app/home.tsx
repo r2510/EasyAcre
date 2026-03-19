@@ -2,7 +2,8 @@
 
 import { WorldMap } from '@/components/world-map';
 import { NewsFeed } from '@/components/news-feed';
-import { WolfreChat } from '@/components/wolfre-chat';
+import { EasyAcreChat } from '@/components/easyacre-chat';
+import { EasyAcreLogo } from '@/components/easyacre-logo';
 import { CityInsights } from '@/components/city-insights';
 import { useCityContext } from '@/lib/city-context';
 import { useCitiesData } from '@/lib/cities-data-provider';
@@ -22,26 +23,20 @@ export function Home({ onLogout }: HomeProps) {
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-6 lg:px-10 py-3 bg-black/40 backdrop-blur-xl border-b border-white/10">
         <button onClick={onLogout} className="flex items-center gap-3 hover:opacity-70 transition-opacity">
-          <div className="w-9 h-9 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center">
-            <span className="text-base font-bold">W</span>
-          </div>
-          <div className="text-left">
-            <h1 className="text-lg font-extrabold tracking-widest text-white uppercase leading-none">Wolfre</h1>
-            <p className="text-[9px] text-white/40 tracking-[0.2em] uppercase">Real Estate Intelligence</p>
-          </div>
+          <EasyAcreLogo size={36} showText />
         </button>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setChatOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white/70 hover:text-white border border-white/10 hover:bg-white/10 rounded-lg transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 hover:text-white border border-white/10 hover:bg-white/10 rounded-lg transition-all"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Ask Wolfre</span>
+            <span className="hidden sm:inline">Ask EasyAcre</span>
           </button>
           <button
             onClick={onLogout}
-            className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white/40 hover:text-white/70 transition-all"
+            className="px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/40 hover:text-white/70 transition-all"
           >
             Exit
           </button>
@@ -92,8 +87,8 @@ export function Home({ onLogout }: HomeProps) {
         </div>
       </section>
 
-      {/* Wolfre Chat Slide-in Panel */}
-      <WolfreChat />
+      {/* EasyAcre Chat Slide-in Panel */}
+      <EasyAcreChat />
     </div>
   );
 }

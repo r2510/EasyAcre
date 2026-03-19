@@ -54,21 +54,24 @@ export function Landing({ onExplore }: LandingProps) {
         className="absolute inset-0 w-full h-full object-cover"
         style={{ filter: 'brightness(0.4)' }}
       >
-        <source src="/wolfre-bg.mp4" type="video/mp4" />
+        <source src="/easyacre-bg.mp4" type="video/mp4" />
       </video>
 
       <div className="absolute inset-0 bg-black/20" />
 
       <div className="relative z-10 min-h-screen flex flex-col">
         <div className="px-8 lg:px-16 py-6 flex items-center">
-          <div className="text-left">
-            <h2 className="text-3xl font-extrabold tracking-tight text-white uppercase">
-              Wolfre
-            </h2>
-            <p className="text-xs text-white/50 tracking-[0.25em] uppercase">
-              Real Estate Intelligence
-            </p>
-          </div>
+          <a href="/" className="flex items-center gap-3">
+            <img src="/easyacre-logo.svg" alt="EasyAcre" className="w-12 h-12" />
+            <div className="text-left">
+              <h2 className="text-3xl font-extrabold tracking-tight text-white">
+                EasyAcre
+              </h2>
+              <p className="text-xs text-white/50 tracking-wide">
+                Real Estate Intelligence
+              </p>
+            </div>
+          </a>
         </div>
 
         <div className="flex-1 flex items-center px-8 lg:px-16 py-12">
@@ -147,7 +150,7 @@ export function Landing({ onExplore }: LandingProps) {
 
         <div className="px-8 lg:px-16 py-5">
           <p className="text-white/30 text-xs tracking-wide">
-            &copy; {new Date().getFullYear()} Wolfre &mdash; World of Realty. All rights reserved.
+            &copy; {new Date().getFullYear()} EasyAcre &mdash; World of Realty. All rights reserved.
           </p>
         </div>
       </div>

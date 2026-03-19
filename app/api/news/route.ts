@@ -44,7 +44,7 @@ function buildSummaryProviders(): SummaryProvider[] {
       headers: {
         'HTTP-Referer':
           process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-        'X-Title': 'Wolfre',
+        'X-Title': 'EasyAcre',
       },
     });
   }

@@ -11,13 +11,13 @@ function generateSessionId(): string {
 
 interface ChatMessage {
   id: string;
-  sender: 'user' | 'wolfre';
+  sender: 'user' | 'easyacre';
   text: string;
 }
 
 const CHAT_CONTEXT_GENERAL = '';
 
-export function WolfreChat() {
+export function EasyAcreChat() {
   const { selectedCityId, chatOpen, setChatOpen, chatNewsContext, clearChatNewsContext } = useCityContext();
   const { getCityById } = useCitiesData();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -112,16 +112,16 @@ export function WolfreChat() {
         throw new Error(data.error || 'Failed to get response');
       }
 
-      const wolfResponse: ChatMessage = {
+      const assistantResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        sender: 'wolfre',
+        sender: 'easyacre',
         text: data.response,
       };
-      setMessages((prev) => [...prev, wolfResponse]);
+      setMessages((prev) => [...prev, assistantResponse]);
     } catch (err) {
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        sender: 'wolfre',
+        sender: 'easyacre',
         text: `Sorry, I couldn't process that right now. ${err instanceof Error ? err.message : 'Please try again.'}`,
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -165,7 +165,7 @@ export function WolfreChat() {
               <MessageCircle className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-white">Wolfre AI</h3>
+              <h3 className="font-bold text-sm text-white">EasyAcre AI</h3>
               <p className="text-xs text-white/60">
                 {isLoading ? 'Thinking...' : effectiveCity ? `${effectiveCity.name} · Real Estate` : 'General · Real Estate'}
               </p>
@@ -187,7 +187,7 @@ export function WolfreChat() {
                 <MessageCircle className="w-7 h-7 text-white/80" />
               </div>
               <div>
-                <p className="font-semibold text-white mb-1">Hi! I&apos;m Wolfre</p>
+                <p className="font-semibold text-white mb-1">Hi! I&apos;m EasyAcre</p>
                 <p className="text-xs text-white/50 max-w-xs">
                   Your AI-powered real estate assistant.
                   {effectiveCity ? ` Ask me anything about ${effectiveCity.name}!` : ' Ask me anything about real estate!'}
@@ -262,13 +262,13 @@ export function WolfreChat() {
                 }, 1200);
               }}
               data-scrolling={showScrollbar ? 'true' : undefined}
-              placeholder={isLoading ? 'Wolfre is thinking...' : 'Ask Wolfre...'}
+              placeholder={isLoading ? 'EasyAcre is thinking...' : 'Ask EasyAcre...'}
               disabled={isLoading}
               rows={3}
               className="w-full min-h-[72px] max-h-[180px] resize-none overflow-y-auto scrollbar-overlay px-4 pt-3 pb-1 bg-transparent text-white text-sm focus:outline-none placeholder-white/40 disabled:opacity-50 whitespace-pre-wrap break-words border-0 focus:ring-0"
             />
             <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-t border-white/5">
-              {/* Context dropdown – styled similar to Ask Wolfre button, with Cursor-like mode switch feel */}
+              {/* Context dropdown – styled similar to Ask EasyAcre button, with Cursor-like mode switch feel */}
               <div className="relative inline-flex items-center max-w-[60%] px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 hover:bg-white/20 transition-colors">
                 <select
                   value={chatContext}

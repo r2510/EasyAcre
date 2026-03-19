@@ -185,7 +185,7 @@ export function NewsFeed() {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-white/80 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg transition-all"
                   >
                     <MessageCircle className="w-3 h-3" />
-                    Ask Wolfre
+                    Ask EasyAcre
                   </button>
                 </div>
               </div>

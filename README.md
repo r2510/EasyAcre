@@ -1,6 +1,6 @@
-# Wolfre — Real Estate Intelligence
+# EasyAcre — Real Estate Intelligence
 
-**Wolfre** is a real estate intelligence app that lets retail investors explore premier property markets with real-time data, ask an AI assistant (Wolfre) about buying, investing, financing, and regulations, and stay informed with city-specific news and concise AI-summarized updates. It cuts through market noise to give a simple, clear experience focused on your growth.
+**EasyAcre** is a real estate intelligence app that lets retail investors explore premier property markets with real-time data, ask an AI assistant (EasyAcre) about buying, investing, financing, and regulations, and stay informed with city-specific news and concise AI-summarized updates. It cuts through market noise to give a simple, clear experience focused on your growth.
 
 ## Tech stack
 
@@ -74,7 +74,7 @@ pnpm test
 
 - Set all required env vars in your host (e.g. Vercel → Settings → Environment variables).
 - Set `NEXT_PUBLIC_SITE_URL` to your live URL.
-- **Landing video:** The landing page uses `/wolfre-bg.mp4`. Place `wolfre-bg.mp4` in the `public/` folder so it is served at the root. If the file is missing, the landing hero may show a broken video (browsers handle missing `<video src>` differently).
+- **Landing video:** The landing page uses `/easyacre-bg.mp4`. Place `easyacre-bg.mp4` in the `public/` folder so it is served at the root. If the file is missing, the landing hero may show a broken video (browsers handle missing `<video src>` differently).
 
 ## License
 

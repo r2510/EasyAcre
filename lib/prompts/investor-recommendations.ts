@@ -1,6 +1,6 @@
 /**
  * Guidance for tailoring recommendations to different investor profiles.
- * Focused on retail and early-stage investors so Wolfre suggests
+ * Focused on retail and early-stage investors so EasyAcre suggests
  * appropriately simple, diversified, and accessible products first.
  */
 export const INVESTOR_RECOMMENDATION_GUIDE = `

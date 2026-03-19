@@ -3,7 +3,7 @@ import { INVESTOR_RECOMMENDATION_GUIDE } from './investor-recommendations';
 
 /**
  * Builds the full system prompt sent to the model.
- * - Base Wolfre behavior and safety rules
+ * - Base EasyAcre behavior and safety rules
  * - Optional city-specific guidance
  * - Optional recent web context (from Tavily) when user asks for latest/today/current info
  * - Investor-profile guidance (retail / early investors, etc.)
