@@ -1,4 +1,4 @@
-# EasyAcre — Real Estate Intelligence
+# EasyAcre — City Property, Simplified
 
 **EasyAcre** is a real estate intelligence app that lets retail investors explore premier property markets with real-time data, ask an AI assistant (EasyAcre) about buying, investing, financing, and regulations, and stay informed with city-specific news and concise AI-summarized updates. It cuts through market noise to give a simple, clear experience focused on your growth.
 

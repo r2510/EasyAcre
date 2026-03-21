@@ -50,13 +50,13 @@ export function Home({ onLogout }: HomeProps) {
             {city ? (
               <>Exploring <span className="text-white/60">{city.name}, {city.country}</span></>
             ) : (
-              <>Explore global<br />real estate markets.</>
+              <>Explore <br />real estate markets.</>
             )}
           </h2>
           <p className="text-base lg:text-lg text-white/50 leading-relaxed max-w-2xl mb-6">
             {city
               ? `Live market intelligence, curated news, and AI-powered insights for ${city.name}. Click any city on the map to switch markets.`
-              : 'Navigate the world\'s premier property markets. Select a city on the map below to get started with real-time news, market data, and AI analysis.'}
+              : 'Navigate the premier property markets. Select a city on the map below to get started with real-time news, market data, and AI analysis.'}
           </p>
           <div className="flex flex-wrap items-center gap-4 text-xs text-white/30 uppercase tracking-widest">
             <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> 145+ Cities</span>

@@ -25,7 +25,7 @@ export function Landing({ onExplore }: LandingProps) {
     {
       icon: Globe2,
       title: 'Explore Premier Markets',
-      description: 'Navigate the world\'s top property markets with real-time data — no noise, just clarity.',
+      description: 'Navigate the top property markets with real-time data — no noise, just clarity.',
     },
     {
       icon: MessageSquare,
@@ -68,7 +68,7 @@ export function Landing({ onExplore }: LandingProps) {
                 EasyAcre
               </h2>
               <p className="text-xs text-white/50 tracking-wide">
-                Real Estate Intelligence
+                City Property, Simplified
               </p>
             </div>
           </a>
