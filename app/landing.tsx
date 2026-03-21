@@ -150,7 +150,7 @@ export function Landing({ onExplore }: LandingProps) {
 
         <div className="px-8 lg:px-16 py-5">
           <p className="text-white/30 text-xs tracking-wide">
-            &copy; {new Date().getFullYear()} EasyAcre &mdash; World of Realty. All rights reserved.
+            &copy; {new Date().getFullYear()} EasyAcre. All rights reserved.
           </p>
         </div>
       </div>

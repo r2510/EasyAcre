@@ -78,4 +78,6 @@ pnpm test
 
 ## License
 
-Private.
+Copyright © 2025 EasyAcre. All rights reserved.
+
+This repository and application are **private** / proprietary. Do not copy, distribute, or use without permission.
