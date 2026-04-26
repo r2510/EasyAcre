@@ -23,24 +23,24 @@ export function Landing({ onExplore }: LandingProps) {
 
   const features = [
     {
-      icon: Globe2,
-      title: 'Explore Premier Markets',
-      description: 'Navigate the top property markets with real-time data — no noise, just clarity.',
-    },
-    {
       icon: MessageSquare,
       title: 'Ask Real Estate Questions',
       description: 'From capital hurdles to market fears—tackle what\'s holding you back from your real estate goals with AI.',
     },
     {
-      icon: TrendingUp,
-      title: 'Interact with City News',
-      description: 'Critically analyze specific news narratives through AI lenses.',
+      icon: Zap,
+      title: 'AI Chat, Always On',
+      description: 'Have an always-available AI real estate chat to quickly get clarity, context, and actionable next steps.',
     },
     {
-      icon: Zap,
-      title: 'News, Distilled',
-      description: 'Skip the overload. Get concise summaries of what actually matters in real estate today.',
+      icon: Globe2,
+      title: 'Explore Premier Markets',
+      description: 'Navigate the top property markets with real-time data — no noise, just clarity.',
+    },
+    {
+      icon: TrendingUp,
+      title: 'Interact with City News, Distilled',
+      description: 'Critically analyze city news narratives through AI lenses, with concise takeaways on what truly matters in real estate today.',
     },
   ];
 
@@ -67,9 +67,7 @@ export function Landing({ onExplore }: LandingProps) {
               <h2 className="text-3xl font-extrabold tracking-tight text-white">
                 EasyAcre
               </h2>
-              <p className="text-xs text-white/50 tracking-wide">
-                City Property, Simplified
-              </p>
+              {/* <p className="text-xs text-white/50 tracking-wide">City Property, Simplified</p> */}
             </div>
           </a>
         </div>
@@ -79,7 +77,7 @@ export function Landing({ onExplore }: LandingProps) {
             <div className="space-y-10">
               <div className="space-y-5">
                 <h1 className="text-5xl lg:text-7xl font-extrabold text-white leading-[1.1] tracking-tight">
-                  Real estate,<br />reimagined for you.
+                  Real Estate Research, Simplified.
                 </h1>
                 <p className="text-lg lg:text-xl text-white/70 font-light leading-relaxed max-w-lg">
                   The real estate market is cluttered, complex, and often intimidating for retail investors. We&apos;ve stripped away the confusion to build a simple, beautiful experience designed for your growth.
@@ -115,7 +113,7 @@ export function Landing({ onExplore }: LandingProps) {
               <div className="w-full max-w-md space-y-6 bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl p-8 lg:p-10">
                 <div className="text-center space-y-2">
                   <h3 className="text-2xl font-bold text-white">Begin Your Journey</h3>
-                  <p className="text-sm text-white/50">Choose a premier market to start exploring real estate insights.</p>
+                  <p className="text-sm text-white/50">Choose a premier market where you are investing or planning to invest.</p>
                 </div>
 
                 <div className="space-y-4">
@@ -140,7 +138,7 @@ export function Landing({ onExplore }: LandingProps) {
                     disabled={!selectedCity}
                     className="w-full py-4 px-6 bg-white text-gray-900 font-bold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all text-base shadow-xl hover:bg-white/90 transform hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider"
                   >
-                    Explore Now
+                    Let&apos;s Get Started
                   </button>
                 </div>
               </div>

@@ -26,7 +26,7 @@ export function EasyAcreLogo({ className = '', size = 36, showText = false }: Ea
           <span className="text-lg font-extrabold tracking-tight text-white leading-none">
             EasyAcre
           </span>
-          <p className="text-[9px] text-white/40 tracking-wide">City Property, Simplified</p>
+          {/* <p className="text-[9px] text-white/40 tracking-wide">City Property, Simplified</p> */}
         </div>
       )}
     </div>

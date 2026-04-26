@@ -16,10 +16,25 @@ const DEFAULT_BOUNDS: [[number, number], [number, number]] = [
   [75, 180],
 ];
 
+/** A city is plottable only if lat/lng are real, finite numbers in valid ranges. */
+function hasValidCoords(city: { lat: unknown; lng: unknown }): boolean {
+  const lat = Number(city.lat);
+  const lng = Number(city.lng);
+  return (
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+  );
+}
+
 function getMapBounds(cities: CityWithSnapshot[]): [[number, number], [number, number]] {
-  if (!cities.length) return DEFAULT_BOUNDS;
-  const lats = cities.map((c) => c.lat);
-  const lngs = cities.map((c) => c.lng);
+  const valid = cities.filter(hasValidCoords);
+  if (!valid.length) return DEFAULT_BOUNDS;
+  const lats = valid.map((c) => Number(c.lat));
+  const lngs = valid.map((c) => Number(c.lng));
   return [
     [Math.min(...lats) - PADDING, Math.min(...lngs) - PADDING],
     [Math.max(...lats) + PADDING, Math.max(...lngs) + PADDING],
@@ -49,7 +64,46 @@ function MapController({ selectedId, cities }: { selectedId: string | null; citi
   useEffect(() => {
     if (!selectedId || !cities.length) return;
     const city = cities.find((c) => c.id === selectedId);
-    if (city) map.flyTo([city.lat, city.lng], 5, { duration: 0.5 });
+    if (!city || !hasValidCoords(city)) return;
+
+    const target: [number, number] = [Number(city.lat), Number(city.lng)];
+
+    // Leaflet's flyTo divides by container size; if the map's container is 0×0
+    // (e.g. it just mounted, or its parent is briefly hidden), the internal math
+    // produces NaN and Leaflet throws "Invalid LatLng object: (NaN, NaN)".
+    // Wait until the container has real dimensions before animating.
+    const animate = () => {
+      const size = map.getSize();
+      if (size.x > 0 && size.y > 0) {
+        // setView is the safe non-animated fallback if anything else looks off.
+        try {
+          map.flyTo(target, 5, { duration: 0.5 });
+        } catch {
+          map.setView(target, 5);
+        }
+        return true;
+      }
+      return false;
+    };
+
+    if (animate()) return;
+
+    // Container not ready yet — try again on the next resize/layout pass.
+    const onResize = () => {
+      if (animate()) {
+        map.off('resize', onResize);
+      }
+    };
+    map.on('resize', onResize);
+    // Also attempt once after a tick, in case no resize event fires.
+    const t = setTimeout(() => {
+      if (animate()) map.off('resize', onResize);
+    }, 100);
+
+    return () => {
+      clearTimeout(t);
+      map.off('resize', onResize);
+    };
   }, [selectedId, map, cities]);
   return null;
 }
@@ -61,16 +115,21 @@ function CitySearch({ cities }: { cities: CityWithSnapshot[] }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const filtered = query.trim()
-    ? cities.filter(
-        (c) =>
-          c.name.toLowerCase().includes(query.toLowerCase()) ||
-          c.country.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 8)
+    ? cities
+        .filter(hasValidCoords)
+        .filter(
+          (c) =>
+            c.name.toLowerCase().includes(query.toLowerCase()) ||
+            c.country.toLowerCase().includes(query.toLowerCase())
+        )
+        .slice(0, 8)
     : [];
 
   const handleSelect = (city: CityWithSnapshot) => {
     setSelectedCityId(city.id);
-    map.flyTo([city.lat, city.lng], 5, { duration: 0.5 });
+    if (hasValidCoords(city)) {
+      map.flyTo([Number(city.lat), Number(city.lng)], 5, { duration: 0.5 });
+    }
     setQuery('');
   };
 
@@ -135,7 +194,9 @@ interface MapViewProps {
 export function MapView({ onCitySelect }: MapViewProps) {
   const { selectedCityId, setSelectedCityId } = useCityContext();
   const { cities } = useCitiesData();
-  const mapBounds = useMemo(() => getMapBounds(cities), [cities]);
+  // Drop any city missing real coordinates so the map never receives NaN values.
+  const plottableCities = useMemo(() => cities.filter(hasValidCoords), [cities]);
+  const mapBounds = useMemo(() => getMapBounds(plottableCities), [plottableCities]);
 
   const handleCitySelect = (cityId: string) => {
     setSelectedCityId(cityId);
@@ -160,12 +221,12 @@ export function MapView({ onCitySelect }: MapViewProps) {
           attribution="Leaflet · © OpenStreetMap · © CARTO"
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
-        <MapController selectedId={selectedCityId} cities={cities} />
-        <CitySearch cities={cities} />
-        {cities.map((city) => (
+        <MapController selectedId={selectedCityId} cities={plottableCities} />
+        <CitySearch cities={plottableCities} />
+        {plottableCities.map((city) => (
           <Marker
             key={city.id}
-            position={[city.lat, city.lng]}
+            position={[Number(city.lat), Number(city.lng)]}
             icon={createHomeLocationIcon(city.id === selectedCityId)}
             eventHandlers={{
               click: () => handleCitySelect(city.id),
